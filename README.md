@@ -1,2 +1,4 @@
-# Public
-Pet projects
+# PhBook
+Pet project
+
+Телефонная книжка на Golang с аутентификацией и корректировкой списка контактов
