@@ -1,7 +1,7 @@
 package database
 
 import (
-	"PhBook/models"
+	"PhBook/domen"
 	"database/sql"
 	"fmt"
 
@@ -99,7 +99,7 @@ func (s *SQLiteDB) AddContact(userID int, name, phone string) error {
 }
 
 // Выводит все контакты пользователя
-func (s *SQLiteDB) GetContacts(userID int) ([]models.Contact, error) {
+func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 	rows, err := s.db.Query("SELECT id, name, phone FROM contacts WHERE user_id = ?", userID)
 
 	if err != nil {
@@ -108,10 +108,10 @@ func (s *SQLiteDB) GetContacts(userID int) ([]models.Contact, error) {
 	}
 	defer rows.Close()
 
-	var contacts []models.Contact
+	var contacts []domen.Contact
 
 	for rows.Next() {
-		var contact models.Contact
+		var contact domen.Contact
 		err := rows.Scan(&contact.ID, &contact.Name, &contact.Phone)
 
 		if err != nil {
@@ -126,7 +126,7 @@ func (s *SQLiteDB) GetContacts(userID int) ([]models.Contact, error) {
 }
 
 // Поиск контакта по имени
-func (s *SQLiteDB) FindContact(userID int, name string) ([]models.Contact, error) {
+func (s *SQLiteDB) FindContact(userID int, name string) ([]domen.Contact, error) {
 	rows, err := s.db.Query("SELECT id, name, phone FROM contacts WHERE user_id = ? AND name LIKE ?", userID, "%"+name+"%")
 
 	if err != nil {
@@ -135,10 +135,10 @@ func (s *SQLiteDB) FindContact(userID int, name string) ([]models.Contact, error
 	}
 	defer rows.Close()
 
-	var contacts []models.Contact
+	var contacts []domen.Contact
 
 	for rows.Next() {
-		var contact models.Contact
+		var contact domen.Contact
 		err := rows.Scan(&contact.ID, &contact.Name, &contact.Phone)
 
 		if err != nil {

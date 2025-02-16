@@ -3,7 +3,7 @@ package main
 
 import (
 	"PhBook/database"
-	"PhBook/models"
+	"PhBook/userCase"
 	"fmt"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	}
 
 	//Создание PhoneBook
-	pb := models.NewPhoneBook(db)
+	pb := userCase.NewPhoneBook(db)
 
 	//Меню регистрации, входа
 	for {
@@ -80,7 +80,7 @@ func main() {
 }
 
 // Меню телефонной книги
-func phoneBookMenu(pb *models.PhoneBook, userID int) {
+func phoneBookMenu(pb *userCase.PhoneBook, userID int) {
 	for {
 		fmt.Println("\nВыберите действие:")
 		fmt.Println("1. Добавить контакт")
