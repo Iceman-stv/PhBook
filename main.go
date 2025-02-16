@@ -17,6 +17,9 @@ func main() {
 		return
 	}
 
+	//Создание PhoneBook
+	pb := models.NewPhoneBook(db)
+
 	//Меню регистрации, входа
 	for {
 		fmt.Println("\nВыберите действие:")
@@ -38,7 +41,7 @@ func main() {
 			fmt.Print("Введите пароль: ")
 			fmt.Scanln(&password)
 
-			err := db.RegisterUser(username, password)
+			err := pb.RegisterUser(username, password)
 
 			if err != nil {
 
@@ -56,12 +59,12 @@ func main() {
 			fmt.Print("Введите пароль: ")
 			fmt.Scanln(&password)
 
-			userID, err := db.AuthUser(username, password)
+			userID, err := pb.AuthUser(username, password)
 			if err != nil {
 				fmt.Println("Ошибка аутентификации:", err)
 			} else {
 				fmt.Println("Добро пожаловать", username)
-				phoneBookMenu(db, userID)
+				phoneBookMenu(pb, userID)
 			}
 
 		case 3:
@@ -77,7 +80,7 @@ func main() {
 }
 
 // Меню телефонной книги
-func phoneBookMenu(db models.Database, userID int) {
+func phoneBookMenu(pb *models.PhoneBook, userID int) {
 	for {
 		fmt.Println("\nВыберите действие:")
 		fmt.Println("1. Добавить контакт")
@@ -100,7 +103,7 @@ func phoneBookMenu(db models.Database, userID int) {
 			fmt.Print("Введите телефон: ")
 			fmt.Scanln(&phone)
 
-			err := db.AddContact(userID, name, phone)
+			err := pb.AddContact(userID, name, phone)
 
 			if err != nil {
 
@@ -116,7 +119,7 @@ func phoneBookMenu(db models.Database, userID int) {
 			fmt.Print("Введите имя для удаления: ")
 			fmt.Scanln(&name)
 
-			err := db.DelContact(userID, name)
+			err := pb.DelContact(userID, name)
 
 			if err != nil {
 
@@ -132,7 +135,7 @@ func phoneBookMenu(db models.Database, userID int) {
 			fmt.Print("Введите имя для поиска: ")
 			fmt.Scanln(&name)
 
-			contacts, err := db.FindContact(userID, name)
+			contacts, err := pb.FindContact(userID, name)
 
 			if err != nil {
 
@@ -147,7 +150,7 @@ func phoneBookMenu(db models.Database, userID int) {
 
 		case 4:
 
-			contacts, err := db.GetContacts(userID)
+			contacts, err := pb.GetContacts(userID)
 
 			if err != nil {
 
