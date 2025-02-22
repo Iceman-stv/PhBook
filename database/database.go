@@ -2,6 +2,7 @@ package database
 
 import (
 	"PhBook/domen"
+	"PhBook/logger"
 	"database/sql"
 	"fmt"
 
@@ -19,7 +20,8 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 
 	if err != nil {
 
-		return nil, fmt.Errorf("Ошибка при открытии БД %v", err)
+		logger.LogError("Ошибка при открытии БД:", err)
+		return nil, fmt.Errorf("Ошибка при открытии БД %v")
 	}
 
 	//Создание таблицы пользователей, если она не существует
@@ -33,7 +35,8 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 
 	if err != nil {
 
-		return nil, fmt.Errorf("Ошибка при создании таблицы пользователей %v", err)
+		logger.LogError("Ошибка при создании таблицы пользователей:", err)
+		return nil, fmt.Errorf("Ошибка при создании таблицы пользователей")
 	}
 
 	//Создание таблицы контактов, если она не существует
@@ -49,7 +52,8 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 
 	if err != nil {
 
-		return nil, fmt.Errorf("Ошибка при создании таблицы контактов %v", err)
+		logger.LogError("Ошибка при создании таблицы контактов:", err)
+		return nil, fmt.Errorf("Ошибка при создании таблицы контактов")
 	}
 
 	return &SQLiteDB{db: db}, nil
@@ -61,7 +65,8 @@ func (s *SQLiteDB) RegisterUser(username, password string) error {
 
 	if err != nil {
 
-		return fmt.Errorf("Ошибка при регистрации пользователя %v", err)
+		logger.LogError("Ошибка при регистрации пользователя:", err)
+		return fmt.Errorf("Ошибка при регистрации пользователя")
 	}
 
 	return nil
@@ -75,6 +80,7 @@ func (s *SQLiteDB) AuthUser(username, password string) (int, error) {
 
 	if err != nil {
 
+		logger.LogError("Ошибка при аутентификации пользователя:", err)
 		return 0, fmt.Errorf("Ошибка при аутентификации %v", err)
 	}
 
@@ -92,7 +98,8 @@ func (s *SQLiteDB) AddContact(userID int, name, phone string) error {
 
 	if err != nil {
 
-		return fmt.Errorf("Ошибка при создании контакта %v", err)
+		logger.LogError("Ошибка при создании контакта:", err)
+		return fmt.Errorf("Ошибка при создании контакта")
 	}
 
 	return nil
@@ -104,7 +111,8 @@ func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 
 	if err != nil {
 
-		return nil, fmt.Errorf("ошибка при получении контактов %v", err)
+		logger.LogError("Ошибка при получении контактов:", err)
+		return nil, fmt.Errorf("ошибка при получении контактов")
 	}
 	defer rows.Close()
 
@@ -116,7 +124,8 @@ func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 
 		if err != nil {
 
-			return nil, fmt.Errorf("ошибка при сканировании контакта %v", err)
+			logger.LogError("Ошибка при сканировании контакта(getcontacts):", err)
+			return nil, fmt.Errorf("ошибка при сканировании контакта")
 		}
 
 		contacts = append(contacts, contact)
@@ -130,8 +139,8 @@ func (s *SQLiteDB) FindContact(userID int, name string) ([]domen.Contact, error)
 	rows, err := s.db.Query("SELECT id, name, phone FROM contacts WHERE user_id = ? AND name LIKE ?", userID, "%"+name+"%")
 
 	if err != nil {
-
-		return nil, fmt.Errorf("ошибка при поиске контакта %v", err)
+		logger.LogError("Ошибка при поиске контакта:", err)
+		return nil, fmt.Errorf("Ошибка при поиске контакта")
 	}
 	defer rows.Close()
 
@@ -143,7 +152,8 @@ func (s *SQLiteDB) FindContact(userID int, name string) ([]domen.Contact, error)
 
 		if err != nil {
 
-			return nil, fmt.Errorf("ошибка при сканировании контакта %v", err)
+			logger.LogError("Ошибка при сканировании контакта(findcontacts):", err)
+			return nil, fmt.Errorf("Ошибка при сканировании контакта")
 		}
 
 		contacts = append(contacts, contact)
@@ -158,7 +168,8 @@ func (s *SQLiteDB) DelContact(userID int, name string) error {
 
 	if err != nil {
 
-		return fmt.Errorf("Ошибка при удалении контакта %v", err)
+		logger.LogError("Ошибка при удалении контакта:", err)
+		return fmt.Errorf("Ошибка при удалении контакта")
 	}
 
 	return nil

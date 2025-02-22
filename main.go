@@ -5,7 +5,6 @@ import (
 	"PhBook/database"
 	"PhBook/interface/console"
 	"PhBook/userCase"
-	"fmt"
 )
 
 func main() {
@@ -14,7 +13,7 @@ func main() {
 
 	if err != nil {
 
-		fmt.Printf("Ошибка при инициализации БД %v", err)
+		panic("Ошибка при инициализации БД" + err.Error())
 		return
 	}
 

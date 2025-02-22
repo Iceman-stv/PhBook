@@ -2,6 +2,7 @@
 package console
 
 import (
+	"PhBook/logger"
 	"PhBook/userCase"
 	"fmt"
 )
@@ -59,7 +60,8 @@ func (c *Console) registerUser() {
 
 	if err != nil {
 
-		fmt.Println("Ошибка:", err)
+		logger.LogError("Ошибка при регистрации пользователя:", err)
+		fmt.Println("Ошибка при регистрации пользователя")
 	} else {
 		fmt.Println("Пользователь зарегистрирован")
 	}
@@ -76,8 +78,9 @@ func (c *Console) authUser() {
 	userID, err := c.phoneBook.AuthUser(username, password)
 
 	if err != nil {
-
-		fmt.Println("Ошибка аутентификации:", err)
+		
+		logger.LogError("Ошибка аутентификации:", err)
+		fmt.Println("Ошибка аутентификации")
 	} else {
 		fmt.Println("Добро пожаловать", username)
 		c.phoneBookMenu(userID)
@@ -138,8 +141,9 @@ func (c *Console) addContact(userID int) {
 	err := c.phoneBook.AddContact(userID, name, phone)
 
 	if err != nil {
-
-		fmt.Println("Ошибка:", err)
+		
+		logger.LogError("Ошибка добавления контакта:", err)
+		fmt.Println("Ошибка, контакт не добавлен")
 	} else {
 		fmt.Println("Контакт добавлен")
 	}
@@ -154,8 +158,9 @@ func (c *Console) delContact(userID int) {
 	err := c.phoneBook.DelContact(userID, name)
 
 	if err != nil {
-
-		fmt.Println("Ошибка:", err)
+		
+		logger.LogError("Ошибка удаления контакта:", err)
+		fmt.Println("Ошибка, контакт не удален")
 	} else {
 		fmt.Println("Контакт удален")
 	}
@@ -170,8 +175,9 @@ func (c *Console) findContact(userID int) {
 	contacts, err := c.phoneBook.FindContact(userID, name)
 
 	if err != nil {
-
-		fmt.Println("Ошибка:", err)
+		
+		logger.LogError("Ошибка поиска контактов:", err)
+		fmt.Println("Ошибка, контакты не найдены")
 	} else {
 		fmt.Println("Найденные контакты:")
 
@@ -186,8 +192,9 @@ func (c *Console) getContacts(userID int) {
 	contacts, err := c.phoneBook.GetContacts(userID)
 
 	if err != nil {
-
-		fmt.Println("Ошибка:", err)
+		
+		logger.LogError("Ошибка вывода контактов:", err)
+		fmt.Println("Ошибка, невозможно вывести контакты")
 	} else {
 		fmt.Println("Kонтакты:")
 
