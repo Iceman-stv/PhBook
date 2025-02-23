@@ -4,6 +4,7 @@ package main
 import (
 	"PhBook/database"
 	"PhBook/interface/console"
+	"PhBook/logger"
 	"PhBook/userCase"
 )
 
@@ -15,6 +16,14 @@ func main() {
 
 		panic("Ошибка при инициализации БД" + err.Error())
 		return
+	}
+
+	//Инициализация логгера
+	logDir := "logs" //Папка для логгера
+
+	if err := logger.InitLogger(logDir); err != nil {
+
+		panic("Ошибка инициализации логгера " + err.Error())
 	}
 
 	//Создание PhoneBook
