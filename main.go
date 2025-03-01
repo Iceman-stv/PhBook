@@ -5,6 +5,7 @@ import (
 	"PhBook/database"
 	"PhBook/interface/console"
 	"PhBook/logger"
+	"PhBook/server"
 	"PhBook/userCase"
 )
 
@@ -31,6 +32,9 @@ func main() {
 
 	//Создание консольного приложения
 	app := console.NewConsole(pb)
+
+	// Запуск локального сервера
+	go server.StartServer(pb, ":8080")
 
 	//Старт консольного приложения
 	app.Start()
