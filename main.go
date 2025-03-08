@@ -7,6 +7,10 @@ import (
 	"PhBook/logger"
 	"PhBook/server"
 	"PhBook/userCase"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/handlers"
 )
 
 func main() {
@@ -34,7 +38,17 @@ func main() {
 	app := console.NewConsole(pb)
 
 	// Запуск локального сервера
-	go server.StartServer(pb, ":8080")
+	go func() {
+		server := server.NewServer(pb)
+
+		// Найстройка Cross-origin-resource-sharing (CORS)
+		headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
+		methods := handlers.AllowedMethods([]string{"GET", "POST", "DELETE"})
+		origins := handlers.AllowedOrigins([]string{"*"})
+		// Запуск сервера
+		log.Println("Сервер запущен на адресе :8080")
+		log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins)(server)))
+	}()
 
 	//Старт консольного приложения
 	app.Start()
