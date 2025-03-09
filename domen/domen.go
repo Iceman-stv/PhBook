@@ -9,8 +9,8 @@ type User struct {
 
 // Contact представляет структуру контакта
 type Contact struct {
-	ID     int		`json:"id"`
-	Name   string	`json:"name"`
-	Phone  string	`json:"phone"`
-	UserID int		`json:"userID"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Phone  string `json:"phone"`
+	UserID int    `json:"userID"`
 }

@@ -14,24 +14,23 @@ import (
 )
 
 func main() {
-	//Инициализация БД
-	db, err := database.NewSQLiteDB()
+	// Инициализация логгера
+	logDir := "logs" // Папка для логгера
+	logger, err := logger.InitLogger(logDir)
+	if err != nil {
+		
+		panic("Ошибка инициализации логгера: " + err.Error())
+	}
 
+	// Инициализация БД
+	db, err := database.NewSQLiteDB(logger)
 	if err != nil {
 
-		panic("Ошибка при инициализации БД" + err.Error())
+		logger.LogError("Ошибка при инициализации БД: %v", err)
 		return
 	}
 
-	//Инициализация логгера
-	logDir := "logs" //Папка для логгера
-
-	if err := logger.InitLogger(logDir); err != nil {
-
-		panic("Ошибка инициализации логгера " + err.Error())
-	}
-
-	//Создание PhoneBook
+	// Создание PhoneBook
 	pb := userCase.NewPhoneBook(db)
 
 	//Создание консольного приложения
