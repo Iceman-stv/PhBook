@@ -5,10 +5,7 @@ import (
 	"PhBook/database"
 	"PhBook/interface/console"
 	"PhBook/logger"
-<<<<<<< HEAD
-=======
 	"PhBook/server"
->>>>>>> dop
 	"PhBook/userCase"
 	"time"
 )
@@ -29,19 +26,7 @@ func main() {
 		return
 	}
 
-<<<<<<< HEAD
-	//Инициализация логгера
-	logDir := "logs" //Папка для логгера
-
-	if err := logger.InitLogger(logDir); err != nil {
-
-		panic("Ошибка инициализации логгера " + err.Error())
-	}
-
-	//Создание PhoneBook
-=======
 	// Создание PhoneBook
->>>>>>> dop
 	pb := userCase.NewPhoneBook(db)
 
 	//Создание консольного приложения
@@ -55,6 +40,6 @@ func main() {
 
 	//Старт консольного приложения
 	app.Start()
-
-	time.Sleep(5 * time.Second)
+	
+	time.Sleep(5*time.Second)
 }
