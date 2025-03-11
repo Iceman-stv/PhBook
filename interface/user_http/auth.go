@@ -1,68 +1,68 @@
 package user_http
 
 import (
-    "encoding/json"
-    "net/http"
+	"encoding/json"
+	"net/http"
 
-    "PhBook/userCase"
-    "PhBook/server/utils"
+	"PhBook/server/utils"
+	"PhBook/userCase"
 )
 
 type AuthHandlers struct {
-    pb *userCase.PhoneBook
+	pb *userCase.PhoneBook
 }
 
 func NewAuthHandlers(pb *userCase.PhoneBook) *AuthHandlers {
-    return &AuthHandlers{
-        pb: pb,
-    }
+	return &AuthHandlers{
+		pb: pb,
+	}
 }
 
 func (h *AuthHandlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
-    var req struct {
-        Username string `json:"username"`
-        Password string `json:"password"`
-    }
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-    	
-        http.Error(w, "Неправильный запрос (регистрация)", http.StatusBadRequest)
-        return
-    }
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-    if err := h.pb.RegisterUser(req.Username, req.Password); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "Неправильный запрос (регистрация)", http.StatusBadRequest)
+		return
+	}
 
-    w.WriteHeader(http.StatusCreated)
-    w.Write([]byte("Пользователь зарегистрирован"))
+	if err := h.pb.RegisterUser(req.Username, req.Password); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Пользователь зарегистрирован"))
 }
 
 func (h *AuthHandlers) HandleAuth(w http.ResponseWriter, r *http.Request) {
-    var req struct {
-        Username string `json:"username"`
-        Password string `json:"password"`
-    }
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-    	
-        http.Error(w, "Неправильный запрос (Аутентификация)", http.StatusBadRequest)
-        return
-    }
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-    userID, err := h.pb.AuthUser(req.Username, req.Password)
-    if err != nil {
-    	
-        http.Error(w, err.Error(), http.StatusUnauthorized)
-        return
-    }
+		http.Error(w, "Неправильный запрос (Аутентификация)", http.StatusBadRequest)
+		return
+	}
 
-    token, err := utils.GenerateJWT(userID)
-    if err != nil {
-    	
-        http.Error(w, "Ошибка при генерации токена", http.StatusInternalServerError)
-        return
-    }
+	userID, err := h.pb.AuthUser(req.Username, req.Password)
+	if err != nil {
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(map[string]string{"token": token})
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	token, err := utils.GenerateJWT(userID)
+	if err != nil {
+
+		http.Error(w, "Ошибка при генерации токена", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

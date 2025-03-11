@@ -7,6 +7,7 @@ import (
 	"PhBook/logger"
 	"PhBook/server"
 	"PhBook/userCase"
+	"time"
 )
 
 func main() {
@@ -39,4 +40,6 @@ func main() {
 
 	//Старт консольного приложения
 	app.Start()
+
+	time.Sleep(5 * time.Second)
 }

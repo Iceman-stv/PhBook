@@ -58,7 +58,7 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 	}
 
 	// Получение абсолютного пути к папке с миграциями
-	absPath, err := filepath.Abs("PhBook/migrations")
+	absPath, err := filepath.Abs("migrations")
 	if err != nil {
 		logger.LogError("Ошибка при получении абсолютного пути: %v", err)
 		return fmt.Errorf("Ошибка при получении абсолютного пути: %v", err)
@@ -92,16 +92,16 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 	}
 
 	logger.LogInfo("Миграции успешно применены!")
-	
+
 	// Проверка текущей версии миграций
 	version, dirty, err := m.Version()
 	if err != nil {
-		
+
 		logger.LogError("Ошибка при получении версии миграций: %v", err)
 		return fmt.Errorf("Ошибка при получении версии миграций: %v", err)
 	}
 	logger.LogInfo("Текущая версия миграций: %v, %v", version, dirty)
-	
+
 	return nil
 }
 
