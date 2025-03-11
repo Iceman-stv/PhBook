@@ -29,6 +29,7 @@ func (l *DefaultLogger) LogError(message string, args ...interface{}) {
 // InitLogger инициализирует и возвращает логгер
 func InitLogger(logDir string) (Logger, error) {
 	// Создание папки для логов, если она не существует
+	logDir = "logs" // Папка для логгера
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
 		return nil, fmt.Errorf("Ошибка при создании папки для логов: %v", err)
 	}
