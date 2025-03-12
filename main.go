@@ -12,17 +12,17 @@ import (
 
 func main() {
 	// Инициализация логгера
-	logger, err := logger.InitLogger("Logs")
+	l, err := logger.InitLogger("Logs")
 	if err != nil {
 
 		panic("Ошибка инициализации логгера: " + err.Error())
 	}
 
 	// Инициализация БД
-	db, err := database.NewSQLiteDB(logger)
+	db, err := database.NewSQLiteDB(l)
 	if err != nil {
 
-		logger.LogError("Ошибка при инициализации БД: %v", err)
+		l.LogError("Ошибка при инициализации БД: %v", err)
 		return
 	}
 
@@ -34,12 +34,12 @@ func main() {
 
 	// Запуск локального сервера
 	go func() {
-		server := server.NewServer(pb, logger)
-		server.Start()
+		serv := server.NewServer(pb, l)
+		serv.Start()
 	}()
 
 	//Старт консольного приложения
 	app.Start()
-	
-	time.Sleep(5*time.Second)
+
+	time.Sleep(5 * time.Second)
 }

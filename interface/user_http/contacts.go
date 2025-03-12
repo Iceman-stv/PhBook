@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"PhBook/userCase"
+
 	"github.com/gorilla/mux"
 )
 
@@ -19,6 +20,8 @@ func NewContactHandlers(pb *userCase.PhoneBook) *ContactHandlers {
 }
 
 func (h *ContactHandlers) HandleAddContact(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "applicatin/json")
+
 	var req struct {
 		Name  string `json:"name"`
 		Phone string `json:"phone"`
@@ -37,11 +40,17 @@ func (h *ContactHandlers) HandleAddContact(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Контакт добавлен"))
 }
 
 func (h *ContactHandlers) HandleGetContacts(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
+	w.Header().Add("Content-Type", "applicatin/json")
+
+	rUserID := r.Context().Value("userID")
+	userID, ok := rUserID.(int)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	contacts, err := h.pb.GetContacts(userID)
 	if err != nil {
 
@@ -54,7 +63,14 @@ func (h *ContactHandlers) HandleGetContacts(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *ContactHandlers) HandleDeleteContact(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
+	w.Header().Add("Content-Type", "applicatin/json")
+
+	rUserID := r.Context().Value("userID")
+	userID, ok := rUserID.(int)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	name := mux.Vars(r)["name"]
 	if err := h.pb.DelContact(userID, name); err != nil {
 
@@ -63,11 +79,17 @@ func (h *ContactHandlers) HandleDeleteContact(w http.ResponseWriter, r *http.Req
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Контакт удалён"))
 }
 
 func (h *ContactHandlers) HandleFindContact(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
+	w.Header().Add("Content-Type", "applicatin/json")
+
+	rUserID := r.Context().Value("userID")
+	userID, ok := rUserID.(int)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
 	name := r.URL.Query().Get("name")
 	contacts, err := h.pb.FindContact(userID, name)
 	if err != nil {

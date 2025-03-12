@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -47,6 +48,7 @@ func (s *Server) configureRouter() {
 
 func (s *Server) Start() {
 	s.logger.LogInfo("Сервер заущен на :8080")
+	fmt.Println("Сервер заущен на :8080")
 	headers := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "DELETE"})
 	origins := handlers.AllowedOrigins([]string{"*"})
