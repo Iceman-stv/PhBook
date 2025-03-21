@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package PhBook;
+
+option go_package ="github.com/Iceman-stv/PhBook/gen;gen";
+
+service PhoneBookService {
+  rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse);
+  rpc AuthUser (AuthUserRequest) returns (AuthUserResponse);
+  rpc AddContact (AddContactRequest) returns (AddContactResponse);
+  rpc DelContact (DelContactRequest) returns (DelContactResponse);
+  rpc FindContact (FindContactRequest) returns (FindContactResponse);
+  rpc GetContacts (GetContactsRequest) returns (GetContactsResponse);
+}
+
+message RegisterUserRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RegisterUserResponse {}
+
+message AuthUserRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthUserResponse {
+  int32 user_id = 1;
+  string token = 2;
+}
+
+message AddContactRequest {
+  int32 user_id = 1;
+  string name = 2;
+  string phone = 3;
+}
+
+message AddContactResponse {}
+
+message DelContactRequest {
+  int32 user_id = 1;
+  string name = 2;
+}
+
+message DelContactResponse {}
+
+message FindContactRequest {
+  int32 user_id = 1;
+  string name = 2;
+}
+
+message FindContactResponse {
+  repeated Contact contacts = 1;
+}
+
+message GetContactsRequest {
+  int32 user_id = 1;
+}
+
+message GetContactsResponse {
+  repeated Contact contacts = 1;
+}
+
+message Contact {
+  string name = 1;
+  string phone = 2;
+}

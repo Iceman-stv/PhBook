@@ -7,6 +7,7 @@ import (
 	"PhBook/logger"
 	"PhBook/server"
 	"PhBook/userCase"
+	"PhBook/server/gRPC"
 	"time"
 )
 
@@ -37,6 +38,16 @@ func main() {
 		serv := server.NewServer(pb, l)
 		serv.Start()
 	}()
+	
+	// Запуск gRPC - сервера 
+		go func() {
+		servGRPC := gRPC.NewGRPCServer(pb, l)
+		if err := servGRPC.Start(); err != nil {
+			
+			l.LogError("Ошибка при запуске gRPC-сервера %v", err)
+		}
+	}()
+
 
 	//Старт консольного приложения
 	app.Start()
