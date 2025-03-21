@@ -1,1 +1,0 @@
-protoc --go_out=C:\Users\Iceman\PhBook\gen --go-grpc_out=C:\Users\Iceman\PhBook\gen --proto_path=C:\Users\Iceman\PhBook\proto PhBook.proto
