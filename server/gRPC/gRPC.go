@@ -2,10 +2,10 @@ package gRPC
 
 import (
 	"PhBook/domen"
-	pB "PhBook/gen"
+	pB "PhBook/gen/github.com/Iceman-stv/PhBook/gen"
 	"PhBook/logger"
+	"PhBook/server/jwt"
 	"PhBook/server/middleware_gRPC"
-	"PhBook/server/utils"
 	"PhBook/userCase"
 	"context"
 	"fmt"
@@ -69,7 +69,7 @@ func (s *GRPCServer) AuthUser(ctx context.Context, req *pB.AuthUserRequest) (*pB
 	}
 
 	// Генерация JWT
-	token, err := utils.GenerateJWT(userID)
+	token, err := jwt.GenerateJWT(userID)
 	if err != nil {
 
 		s.logger.LogError("Ошибка при генерации JWT: %v", err)

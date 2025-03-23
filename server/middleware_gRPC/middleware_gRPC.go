@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"PhBook/logger"
-	"PhBook/server/utils"
+	"PhBook/server/jwt"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -47,7 +47,7 @@ func AuthInterceptor(logger logger.Logger) grpc.UnaryServerInterceptor {
 		}
 
 		// Валидирование токена
-		claims, err := utils.ValidateJWT(tokenString)
+		claims, err := jwt.ValidateJWT(tokenString)
 		if err != nil {
 
 			logger.LogError("Неправильный токен: %v", err)

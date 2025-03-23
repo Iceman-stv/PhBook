@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"PhBook/logger"
-	"PhBook/server/utils"
+	"PhBook/server/jwt"
 )
 
 func AuthMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
@@ -28,7 +28,7 @@ func AuthMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
 				return
 			}
 
-			claims, err := utils.ValidateJWT(tokenString)
+			claims, err := jwt.ValidateJWT(tokenString)
 			if err != nil {
 
 				logger.LogError("Неправильный токен: %v", err)

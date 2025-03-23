@@ -1,38 +1,15 @@
-2025/03/11 19:16:20 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:16:20 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:16:20 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:16:50 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:16:50 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:16:50 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:18 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:18 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:18 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:41 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:41 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:23:41 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:24:04 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:24:04 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:24:04 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:26:23 [ERROR] Папка с миграциями не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:26:23 [ERROR] Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:26:23 [ERROR] Ошибка при инициализации БД: Ошибка при применении миграций: Папка с миграций не существует: C:/Users/Iceman/PhBook/PhBook/migrations
-2025/03/11 19:28:08 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:28:08 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:30:15 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:30:15 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:38:29 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:38:29 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:40:23 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:40:23 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:47:02 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:47:02 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:47:49 [ERROR] Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:47:49 [ERROR] Ошибка при инициализации БД: Ошибка при подключении к БД: unable to open database file: out of memory (14)
-2025/03/11 19:50:52 [INFO] Папка с миграциями найдена: C:/Users/Iceman/go/src/PhBook/migrations
-2025/03/11 19:50:52 [INFO] Миграции успешно применены!
-2025/03/11 19:50:52 [INFO] Текущая версия миграций: 2, false
-2025/03/11 19:50:52 [INFO] Сервер заущен на :8080
-2025/03/11 21:00:29 [INFO] Папка с миграциями найдена: C:/Users/Iceman/PhBook/migrations
-2025/03/11 21:00:29 [INFO] Миграции успешно применены!
-2025/03/11 21:00:29 [INFO] Текущая версия миграций: 2, false
-2025/03/11 21:00:29 [INFO] Сервер заущен на :8080
+2025/03/23 18:53:33 logger.go:28: [INFO] Папка с миграциями найдена: C:/Users/Iceman/PhBook/migrations
+2025/03/23 18:53:33 logger.go:28: [INFO] Миграции успешно применены!
+2025/03/23 18:53:33 logger.go:28: [INFO] Текущая версия миграций: 2, false
+2025/03/23 18:53:33 logger.go:28: [INFO] Сервер заущен на :8080
+2025/03/23 18:53:33 logger.go:28: [INFO] gRPC-сервер запущен на [::]:50051
+2025/03/23 19:03:59 logger.go:28: [INFO] Папка с миграциями найдена: C:/Users/Iceman/PhBook/migrations
+2025/03/23 19:03:59 logger.go:28: [INFO] Миграции успешно применены!
+2025/03/23 19:03:59 logger.go:28: [INFO] Текущая версия миграций: 2, false
+2025/03/23 19:03:59 logger.go:28: [INFO] Сервер заущен на :8080
+2025/03/23 19:03:59 logger.go:28: [INFO] gRPC-сервер запущен на [::]:50051
+2025/03/23 19:24:12 logger.go:28: [INFO] Папка с миграциями найдена: C:/Users/Iceman/PhBook/migrations
+2025/03/23 19:24:12 logger.go:28: [INFO] Миграции успешно применены!
+2025/03/23 19:24:12 logger.go:28: [INFO] Текущая версия миграций: 2, false
+2025/03/23 19:24:12 logger.go:28: [INFO] Сервер заущен на :8080
+2025/03/23 19:24:12 logger.go:28: [INFO] gRPC-сервер запущен на [::]:50051

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"PhBook/server/utils"
+	"PhBook/server/jwt"
 	"PhBook/userCase"
 )
 
@@ -56,7 +56,7 @@ func (h *AuthHandlers) HandleAuth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(userID)
+	token, err := jwt.GenerateJWT(userID)
 	if err != nil {
 
 		http.Error(w, "Ошибка при генерации токена", http.StatusInternalServerError)

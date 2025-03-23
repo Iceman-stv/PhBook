@@ -7,6 +7,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
+	github.com/joho/godotenv v1.5.1
 	google.golang.org/grpc v1.64.1
 	google.golang.org/protobuf v1.34.2
 	modernc.org/sqlite v1.36.0

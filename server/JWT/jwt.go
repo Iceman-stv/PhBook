@@ -1,12 +1,21 @@
-package utils
+package jwt
 
 import (
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
-var jwtSecret = []byte("Qwert531")
+// Загрузка переменных окружения из .env файла
+func init() {
+	if err := godotenv.Load(); err != nil {
+		panic("Ошибка загрузки .env файла")
+	}
+}
+
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 type Claims struct {
 	UserID int `json:"userID"`
@@ -30,6 +39,7 @@ func GenerateJWT(userID int) (string, error) {
 func ValidateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+
 		return jwtSecret, nil
 	})
 	if err != nil {
@@ -39,6 +49,10 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	if !token.Valid {
 
 		return nil, jwt.ErrSignatureInvalid
+	}
+	if time.Now().After(claims.ExpiresAt.Time) {
+
+		return nil, err
 	}
 	return claims, nil
 }
