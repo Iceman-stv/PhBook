@@ -1,12 +1,12 @@
 package middleware
 
 import (
+	"PhBook/server/jwt"
 	"context"
 	"net/http"
 	"strings"
 
 	"PhBook/logger"
-	"PhBook/server/jwt"
 )
 
 func AuthMiddleware(logger logger.Logger) func(http.Handler) http.Handler {
