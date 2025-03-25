@@ -1,4 +1,4 @@
-package user_http
+package netInterface
 
 import (
 	"encoding/json"

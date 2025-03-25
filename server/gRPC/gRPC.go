@@ -1,9 +1,9 @@
 package gRPC
 
 import (
-	"PhBook/interface/handlers_gRPC"
+	"PhBook/interface/interfaceGrpc"
 	"PhBook/logger"
-	"PhBook/server/middleware_gRPC"
+	"PhBook/server/middlewareGrpc"
 	"PhBook/userCase"
 	"context"
 	"fmt"
@@ -17,14 +17,14 @@ import (
 // GRPCServer представляет gRPC-сервер
 type GRPCServer struct {
 	pB.UnimplementedPhoneBookServiceServer
-	handlers *handlers_gRPC.PhoneBookHandlers
+	handlers *interfaceGrpc.PhoneBookHandlers
 	logger   logger.Logger
 }
 
 // NewGRPCServer создаёт новый экземпляр GRPCServer
 func NewGRPCServer(pb *userCase.PhoneBook, l logger.Logger) *GRPCServer {
 	return &GRPCServer{
-		handlers: handlers_gRPC.NewPhoneBookHandlers(pb, l),
+		handlers: interfaceGrpc.NewPhoneBookHandlers(pb, l),
 		logger:   l,
 	}
 }
@@ -33,7 +33,7 @@ func NewGRPCServer(pb *userCase.PhoneBook, l logger.Logger) *GRPCServer {
 func (s *GRPCServer) Start() error {
 	// Создание gRPC-сервера
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(middleware_gRPC.AuthInterceptor(s.logger)),
+		grpc.UnaryInterceptor(middlewareGrpc.AuthInterceptor(s.logger)),
 	)
 
 	// Регистрация сервиса на gRPC-сервере

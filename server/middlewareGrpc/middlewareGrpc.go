@@ -1,4 +1,4 @@
-package middleware_gRPC
+package middlewareGrpc
 
 import (
 	"context"

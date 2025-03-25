@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"PhBook/interface/user_http/v1"
+	"PhBook/interface/netInterface/v1"
 	"PhBook/logger"
 	"PhBook/server/middleware"
 	"PhBook/userCase"
@@ -32,8 +32,8 @@ func NewServer(pb *userCase.PhoneBook, logger logger.Logger) *Server {
 
 func (s *Server) configureRouter() {
 	// Регистрация обработчиков
-	authHandlers := user_http.NewAuthHandlers(s.pb)
-	contactHandlers := user_http.NewContactHandlers(s.pb)
+	authHandlers := netInterface.NewAuthHandlers(s.pb)
+	contactHandlers := netInterface.NewContactHandlers(s.pb)
 
 	s.router.HandleFunc("/register", authHandlers.HandleRegister).Methods("POST")
 	s.router.HandleFunc("/auth", authHandlers.HandleAuth).Methods("POST")

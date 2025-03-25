@@ -1,4 +1,4 @@
-package handlers_gRPC
+package interfaceGrpc
 
 import (
     "context"

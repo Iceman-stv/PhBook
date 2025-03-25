@@ -14,6 +14,7 @@ type Logger interface {
 	LogInfo(message string, args ...interface{})
 	LogError(message string, args ...interface{})
 	LogFatal(message string, args ...interface{})
+	LogWarn(message string, args ...interface{})
 	Close() error
 }
 
@@ -36,6 +37,11 @@ func (l *DefaultLogger) LogError(message string, args ...interface{}) {
 // LogFatal логирует сообщения для критических ошибок
 func (l *DefaultLogger) LogFatal(message string, args ...interface{}) {
 	log.Fatalf("[FATAL] "+message, args...)
+}
+
+// LogFatal логирует сообщения для критических ошибок
+func (l *DefaultLogger) LogWarn(message string, args ...interface{}) {
+	log.Fatalf("[WARNING] "+message, args...)
 }
 
 // Функция закрытия логгера
@@ -90,7 +96,7 @@ func InitLogger(logDir string) (Logger, error) {
 	}
 
 	// Настройка логгера для записи в файл и определение формата
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Ltime)
 	log.SetOutput(logFile)
 
 	logger := &DefaultLogger{
