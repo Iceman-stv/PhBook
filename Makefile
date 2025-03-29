@@ -42,8 +42,16 @@ lint:
 	golint ./...
 
 # Запуск тестов
-test:
-	$(GO) test ./...
+test: unit integration
+
+unit:
+	$(GO) test -v -short ./...
+
+integration:
+	$(GO) test -v -tags=integration ./...
+
+bench:
+	$(GO) test -bench=. ./...
 
 # Статический анализ
 staticcheck:

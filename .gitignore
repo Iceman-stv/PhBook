@@ -5,3 +5,5 @@ logs/
 gen/
 
 *.env
+
+test_logs/

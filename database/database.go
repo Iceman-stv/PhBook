@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -38,7 +39,7 @@ func NewSQLiteDB(logger logger.Logger) (*SQLiteDB, error) {
 	}
 
 	// Применение миграций
-	if err := runMigrations(db, logger); err != nil {
+	if err := RunMigrations(db, logger); err != nil {
 
 		logger.LogError("Ошибка при применении миграций: %v", err)
 		return nil, fmt.Errorf("Ошибка при применении миграций: %v", err)
@@ -47,8 +48,16 @@ func NewSQLiteDB(logger logger.Logger) (*SQLiteDB, error) {
 	return &SQLiteDB{db: db, logger: logger}, nil
 }
 
-// runMigrations применяет миграции к базе данных
-func runMigrations(db *sql.DB, logger logger.Logger) error {
+// NewTestDB создает экземпляр SQLiteDB для тестирования
+func NewTestDB(db *sql.DB, logger logger.Logger) *SQLiteDB {
+	return &SQLiteDB{
+		db:     db,
+		logger: logger,
+	}
+}
+
+// RunMigrations применяет миграции к базе данных
+func RunMigrations(db *sql.DB, logger logger.Logger) error {
 	// Создание экземпляра драйвера для SQLite
 	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
 	if err != nil {
@@ -60,7 +69,7 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 	// Получение абсолютного пути к папке с миграциями
 	absPath, err := filepath.Abs("migrations")
 	if err != nil {
-		
+
 		logger.LogError("Ошибка при получении абсолютного пути: %v", err)
 		return fmt.Errorf("Ошибка при получении абсолютного пути: %v", err)
 	}
@@ -69,7 +78,7 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 
 	// Проверка существования папки с миграциями
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		
+
 		logger.LogError("Папка с миграциями не существует: %s", absPath)
 		return fmt.Errorf("Папка с миграций не существует: %s", absPath)
 	}
@@ -83,14 +92,14 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 		driver,
 	)
 	if err != nil {
-		
+
 		logger.LogError("Ошибка при создании миграции: %v", err)
 		return fmt.Errorf("Ошибка при создании миграции: %v", err)
 	}
 
 	// Применение миграции
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		
+
 		logger.LogError("Ошибка при применении миграций: %v", err)
 		return fmt.Errorf("Ошибка при применении миграций: %v", err)
 	}
@@ -104,7 +113,7 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 		logger.LogError("Ошибка при получении версии миграций: %v", err)
 		return fmt.Errorf("Ошибка при получении версии миграций: %v", err)
 	}
-	
+
 	logger.LogInfo("Текущая версия миграций: %v, %v", version, dirty)
 
 	return nil
@@ -112,12 +121,45 @@ func runMigrations(db *sql.DB, logger logger.Logger) error {
 
 // Регистрация нового пользователя
 func (s *SQLiteDB) RegisterUser(username, password string) error {
-	_, err := s.db.Exec("INSERT INTO users (username, password) VALUES (?, ?)", username, password)
+	// Проверка пустого имени пользователя
+	if strings.TrimSpace(username) == "" {
+
+		errMsg := "имя пользователя не может быть пустым"
+		s.logger.LogError(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
+	// Проверка пустого пароля
+	if strings.TrimSpace(password) == "" {
+
+		errMsg := "пароль не может быть пустым"
+		s.logger.LogError(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
+	// Проверка существования пользователя
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE username = ?)", username).Scan(&exists)
 	if err != nil {
 
-		s.logger.LogError("Ошибка при регистрации пользователя: %v", err)
-		return fmt.Errorf("Ошибка при регистрации пользователя")
+		s.logger.LogError("Ошибка проверки пользователя: %v", err)
+		return fmt.Errorf("ошибка регистрации: %w", err)
 	}
+
+	if exists {
+
+		errMsg := fmt.Sprintf("пользователь '%s' уже существует", username)
+		s.logger.LogError(errMsg)
+		return fmt.Errorf(errMsg)
+	}
+
+	_, err = s.db.Exec("INSERT INTO users (username, password) VALUES (?, ?)", username, password)
+	if err != nil {
+
+		s.logger.LogError("Ошибка регистрации пользователя: %v", err)
+		return fmt.Errorf("ошибка регистрации: %w", err)
+	}
+
 	return nil
 }
 
@@ -142,17 +184,44 @@ func (s *SQLiteDB) AuthUser(username, password string) (int, error) {
 
 // Создание нового контакта
 func (s *SQLiteDB) AddContact(userID int, name, phone string) error {
-	_, err := s.db.Exec("INSERT INTO contacts (name, phone, user_id) VALUES (?, ?, ?)", name, phone, userID)
+	// Проверка существования пользователя
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)", userID).Scan(&exists)
+	if err != nil {
+
+		s.logger.LogError("Ошибка проверки пользователя: %v", err)
+		return fmt.Errorf("ошибка проверки пользователя")
+	}
+	if !exists {
+
+		s.logger.LogError("Пользователь с ID %d не существует", userID)
+		return fmt.Errorf("пользователь не существует")
+	}
+
+	_, err = s.db.Exec("INSERT INTO contacts (name, phone, user_id) VALUES (?, ?, ?)", name, phone, userID)
 	if err != nil {
 
 		s.logger.LogError("Ошибка при создании контакта: %v", err)
-		return fmt.Errorf("Ошибка при создании контакта")
+		return fmt.Errorf("ошибка при создании контакта")
 	}
 	return nil
 }
 
-// Выводит все контакты пользователя
 func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
+	// Проверка существования пользователя
+	var exists bool
+	err := s.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)", userID).Scan(&exists)
+	if err != nil {
+
+		s.logger.LogError("Ошибка проверки пользователя: %v", err)
+		return nil, fmt.Errorf("ошибка проверки пользователя")
+	}
+	if !exists {
+
+		s.logger.LogError("Пользователь с ID %d не существует", userID)
+		return nil, fmt.Errorf("пользователь не существует")
+	}
+
 	rows, err := s.db.Query("SELECT id, name, phone FROM contacts WHERE user_id = ?", userID)
 	if err != nil {
 
