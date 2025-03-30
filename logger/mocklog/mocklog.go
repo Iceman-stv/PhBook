@@ -1,4 +1,4 @@
-package databasetest
+package mocklog
 
 import (
 	"fmt"

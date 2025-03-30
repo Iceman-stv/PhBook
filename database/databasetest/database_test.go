@@ -3,12 +3,13 @@ package databasetest
 import (
 	"PhBook/database"
 	"PhBook/logger"
+	"PhBook/logger/mocklog"
 	"database/sql"
 	"testing"
 )
 
 // setupTestDB создает тестовую БД и возвращает функцию для очистки
-func setupTestDB(t *testing.T) (*database.SQLiteDB, *MockLogger, func()) {
+func setupTestDB(t *testing.T) (*database.SQLiteDB, *mocklog.MockLogger, func()) {
 	t.Helper()
 
 	db, err := sql.Open("sqlite", ":memory:")
@@ -17,7 +18,7 @@ func setupTestDB(t *testing.T) (*database.SQLiteDB, *MockLogger, func()) {
 	}
 
 	// Создание MockLogger
-	mockLogger := NewMockLogger()
+	mockLogger := mocklog.NewMockLogger()
 
 	// Преобразование в интерфейс logger.Logger
 	var logger logger.Logger = mockLogger

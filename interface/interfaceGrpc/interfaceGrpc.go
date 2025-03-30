@@ -7,34 +7,57 @@ import (
 	"PhBook/server/jwt"
 	"PhBook/userCase"
 	"context"
+	"errors"
 )
+
+// JWTGenerator определяет интерфейс для генерации JWT
+type JWTGenerator interface {
+	GenerateJWT(userID int) (string, error)
+}
+
+// Реальная реализация JWTGenerator
+type defaultJWTGenerator struct{}
+
+func (g *defaultJWTGenerator) GenerateJWT(userID int) (string, error) {
+	return jwt.GenerateJWT(userID)
+}
 
 // PhoneBookHandlers содержит методы для обработки запросов gRPC
 type PhoneBookHandlers struct {
-	PhoneBook *userCase.PhoneBook
+	PhoneBook userCase.Database
 	Logger    logger.Logger
+	jwtGen    JWTGenerator
 }
 
-// NewPhoneBookHandlers создаёт новый экземпляр PhoneBookHandlers
-func NewPhoneBookHandlers(pb *userCase.PhoneBook, l logger.Logger) *PhoneBookHandlers {
+// NewPhoneBookHandlers создаёт production-экземпляр
+func NewPhoneBookHandlers(pb userCase.Database, l logger.Logger) *PhoneBookHandlers {
 	return &PhoneBookHandlers{
 		PhoneBook: pb,
 		Logger:    l,
+		jwtGen:    &defaultJWTGenerator{},
 	}
 }
 
-// AuthUser аутентифицирует пользователя и возвращает JWT
+// NewTestPhoneBookHandlers создаёт экземпляр для тестов
+func NewTestPhoneBookHandlers(pb userCase.Database, l logger.Logger, jwtGen JWTGenerator) *PhoneBookHandlers {
+	return &PhoneBookHandlers{
+		PhoneBook: pb,
+		Logger:    l,
+		jwtGen:    jwtGen,
+	}
+}
+
+// AuthUser обрабатывает аутентификацию
 func (h *PhoneBookHandlers) AuthUser(ctx context.Context, req *pB.AuthUserRequest) (*pB.AuthUserResponse, error) {
 	userID, err := h.PhoneBook.AuthUser(req.Username, req.Password)
 	if err != nil {
-		h.Logger.LogError("Ошибка при аутентификации пользователя: %v", err)
+		h.Logger.LogError("Ошибка Аутентификации: %v", err)
 		return nil, err
 	}
 
-	// Генерация JWT
-	token, err := jwt.GenerateJWT(userID)
+	token, err := h.jwtGen.GenerateJWT(userID)
 	if err != nil {
-		h.Logger.LogError("Ошибка при генерации JWT: %v", err)
+		h.Logger.LogError("ошибка генерации jwt: %v", err)
 		return nil, err
 	}
 
@@ -44,13 +67,39 @@ func (h *PhoneBookHandlers) AuthUser(ctx context.Context, req *pB.AuthUserReques
 	}, nil
 }
 
+// RegisterUser обрабатывает регистрацию
+func (h *PhoneBookHandlers) RegisterUser(ctx context.Context, req *pB.RegisterUserRequest) (*pB.RegisterUserResponse, error) {
+	if req.Username == "" || req.Password == "" {
+
+		h.Logger.LogError("Ошибка регистрации: пустое имя или пароль")
+		return nil, errors.New("empty username or password")
+	}
+
+	err := h.PhoneBook.RegisterUser(req.Username, req.Password)
+	if err != nil {
+
+		h.Logger.LogError("Ошибка регистрации: %v", err)
+		return nil, err
+	}
+
+	return &pB.RegisterUserResponse{}, nil
+}
+
 // AddContact добавляет контакт
 func (h *PhoneBookHandlers) AddContact(ctx context.Context, req *pB.AddContactRequest) (*pB.AddContactResponse, error) {
+	if req.Name == "" || req.Phone == "" {
+
+		h.Logger.LogError("Ошибка при добавлении контакта: пустое имя или телефон")
+		return nil, errors.New("empty name or phone")
+	}
+
 	err := h.PhoneBook.AddContact(int(req.UserId), req.Name, req.Phone)
 	if err != nil {
+
 		h.Logger.LogError("Ошибка при добавлении контакта: %v", err)
 		return nil, err
 	}
+
 	return &pB.AddContactResponse{}, nil
 }
 

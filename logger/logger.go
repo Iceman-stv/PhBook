@@ -39,9 +39,9 @@ func (l *DefaultLogger) LogFatal(message string, args ...interface{}) {
 	log.Fatalf("[FATAL] "+message, args...)
 }
 
-// LogFatal логирует сообщения для критических ошибок
+// LogFatal логирует сообщения для предупреждений
 func (l *DefaultLogger) LogWarn(message string, args ...interface{}) {
-	log.Fatalf("[WARNING] "+message, args...)
+	log.Printf("[WARNING] "+message, args...)
 }
 
 // Функция закрытия логгера
