@@ -204,6 +204,6 @@ func (s *GRPCServer) mapError(err error) error {
 		return status.Error(codes.NotFound, err.Error())
 	default:
 		s.logger.LogError("Unhandled error: %v", err)
-		return status.Error(codes.Internal, domen.ErrOpertionFailed.Error())
+		return status.Error(codes.Internal, domen.ErrOperationFailed.Error())
 	}
 }

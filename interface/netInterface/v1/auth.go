@@ -23,7 +23,7 @@ func (h *AuthHandlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var req domen.User
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -58,7 +58,7 @@ func (h *AuthHandlers) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	var req domen.User
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *AuthHandlers) HandleAuth(w http.ResponseWriter, r *http.Request) {
 	token, err := jwt.GenerateJWT(userID)
 	if err != nil {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusInternalServerError)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusInternalServerError)
 		return
 	}
 

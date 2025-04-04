@@ -65,7 +65,7 @@ func (h *PhoneBookHandlers) AuthUser(ctx context.Context, req *pB.AuthUserReques
 	if err != nil {
 
 		h.Logger.LogError("Ошибка генерации jwt: %v", err)
-		return nil, domen.ErrOpertionFailed
+		return nil, domen.ErrOperationFailed
 	}
 
 	return &pB.AuthUserResponse{
@@ -101,8 +101,8 @@ func (h *PhoneBookHandlers) RegisterUser(ctx context.Context, req *pB.RegisterUs
 func (h *PhoneBookHandlers) AddContact(ctx context.Context, req *pB.AddContactRequest) (*pB.AddContactResponse, error) {
 	if req.Name == "" || req.Phone == "" {
 
-		h.Logger.LogError("Ошибка при добавлении контакта: %v", domen.ErrOpertionFailed)
-		return nil, domen.ErrOpertionFailed
+		h.Logger.LogError("Ошибка при добавлении контакта: %v", domen.ErrOperationFailed)
+		return nil, domen.ErrOperationFailed
 	}
 
 	err := h.PhoneBook.AddContact(int(req.UserId), req.Name, req.Phone)

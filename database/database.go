@@ -25,18 +25,18 @@ func NewSQLiteDB(logger logger.Logger) (*SQLiteDB, error) {
 	if err != nil {
 
 		logger.LogError("Failed to open DB: %v", err)
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	if err := db.Ping(); err != nil {
 
 		logger.LogError("Failed to ping DB: %v", err)
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	if err := RunMigrations(db, logger); err != nil {
 
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	return &SQLiteDB{db: db, logger: logger}, nil
@@ -51,21 +51,21 @@ func RunMigrations(db *sql.DB, logger logger.Logger) error {
 	if err != nil {
 
 		logger.LogError("Failed to create SQLite driver: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	absPath, err := filepath.Abs("migrations")
 	if err != nil {
 
 		logger.LogError("Failed to get absolute path: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	absPath = filepath.ToSlash(absPath)
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
 
 		logger.LogError("Migrations directory does not exist: %s", absPath)
-		return fmt.Errorf("%w: migrations directory missing", domen.ErrOpertionFailed)
+		return fmt.Errorf("%w: migrations directory missing", domen.ErrOperationFailed)
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
@@ -76,13 +76,13 @@ func RunMigrations(db *sql.DB, logger logger.Logger) error {
 	if err != nil {
 
 		logger.LogError("Failed to create migrator: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 
 		logger.LogError("Failed to apply migrations: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	logger.LogInfo("Миграции применены успешно")
@@ -107,7 +107,7 @@ func (s *SQLiteDB) RegisterUser(username, password string) error {
 	if err != nil {
 
 		s.logger.LogError("User check error: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	if exists {
@@ -120,7 +120,7 @@ func (s *SQLiteDB) RegisterUser(username, password string) error {
 	if err != nil {
 
 		s.logger.LogError("Registration error: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (s *SQLiteDB) AuthUser(username, password string) (int, error) {
 			return 0, domen.ErrUserNotFound
 		}
 		s.logger.LogError("Authentication error: %v", err)
-		return 0, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return 0, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 
 	if storedPassword != password {
@@ -157,7 +157,7 @@ func (s *SQLiteDB) AddContact(userID int, name, phone string) error {
 	if err != nil {
 
 		s.logger.LogError("User check error: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	if !exists {
 
@@ -169,7 +169,7 @@ func (s *SQLiteDB) AddContact(userID int, name, phone string) error {
 	if err != nil {
 
 		s.logger.LogError("Failed to add contact: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	return nil
 }
@@ -180,7 +180,7 @@ func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 	if err != nil {
 
 		s.logger.LogError("User check error: %v", err)
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	if !exists {
 
@@ -192,7 +192,7 @@ func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 	if err != nil {
 
 		s.logger.LogError("Failed to get contacts: %v", err)
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	defer rows.Close()
 
@@ -202,7 +202,7 @@ func (s *SQLiteDB) GetContacts(userID int) ([]domen.Contact, error) {
 		if err := rows.Scan(&contact.ID, &contact.Name, &contact.Phone); err != nil {
 
 			s.logger.LogError("Contact scan error: %v", err)
-			return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+			return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 		}
 		contacts = append(contacts, contact)
 	}
@@ -215,7 +215,7 @@ func (s *SQLiteDB) FindContact(userID int, name string) ([]domen.Contact, error)
 	if err != nil {
 
 		s.logger.LogError("Contact search error: %v", err)
-		return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	defer rows.Close()
 
@@ -225,7 +225,7 @@ func (s *SQLiteDB) FindContact(userID int, name string) ([]domen.Contact, error)
 		if err := rows.Scan(&contact.ID, &contact.Name, &contact.Phone); err != nil {
 
 			s.logger.LogError("Contact scan error: %v", err)
-			return nil, fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+			return nil, fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 		}
 		contacts = append(contacts, contact)
 	}
@@ -243,7 +243,7 @@ func (s *SQLiteDB) DelContact(userID int, name string) error {
 	if err != nil {
 
 		s.logger.LogError("Failed to delete contact: %v", err)
-		return fmt.Errorf("%w: %v", domen.ErrOpertionFailed, err)
+		return fmt.Errorf("%w: %v", domen.ErrOperationFailed, err)
 	}
 	return nil
 }

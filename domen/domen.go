@@ -11,7 +11,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrContactNotFound    = errors.New("contact not found")
 	ErrContactExists      = errors.New("contact already exists")
-	ErrOpertionFailed     = errors.New("Operation failed")
+	ErrOperationFailed    = errors.New("operation failed")
 )
 
 // User представляет структуру пользователя

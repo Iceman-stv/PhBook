@@ -26,7 +26,7 @@ func (h *ContactHandlers) HandleAddContact(w http.ResponseWriter, r *http.Reques
 	var contact domen.Contact
 	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *ContactHandlers) HandleGetContacts(w http.ResponseWriter, r *http.Reque
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (h *ContactHandlers) HandleDeleteContact(w http.ResponseWriter, r *http.Req
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -101,7 +101,7 @@ func (h *ContactHandlers) HandleFindContact(w http.ResponseWriter, r *http.Reque
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
 
-		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		http.Error(w, domen.ErrOperationFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
