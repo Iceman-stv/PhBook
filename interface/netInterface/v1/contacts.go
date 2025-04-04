@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"PhBook/domen"
 	"PhBook/userCase"
 
 	"github.com/gorilla/mux"
@@ -20,35 +21,41 @@ func NewContactHandlers(pb *userCase.PhoneBook) *ContactHandlers {
 }
 
 func (h *ContactHandlers) HandleAddContact(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "applicatin/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	var req struct {
-		Name  string `json:"name"`
-		Phone string `json:"phone"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var contact domen.Contact
+	if err := json.NewDecoder(r.Body).Decode(&contact); err != nil {
 
-		http.Error(w, "Неправильный запрос (Добавление контакта)", http.StatusBadRequest)
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userID := r.Context().Value("userID").(int)
-	if err := h.pb.AddContact(userID, req.Name, req.Phone); err != nil {
+	contact.UserID = userID
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := h.pb.AddContact(contact.UserID, contact.Name, contact.Phone); err != nil {
+
+		switch err {
+		case domen.ErrContactExists:
+			http.Error(w, err.Error(), http.StatusConflict)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(contact)
 }
 
 func (h *ContactHandlers) HandleGetContacts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "applicatin/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	rUserID := r.Context().Value("userID")
-	userID, ok := rUserID.(int)
+	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		return
 	}
 
 	contacts, err := h.pb.GetContacts(userID)
@@ -63,38 +70,51 @@ func (h *ContactHandlers) HandleGetContacts(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *ContactHandlers) HandleDeleteContact(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "applicatin/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	rUserID := r.Context().Value("userID")
-	userID, ok := rUserID.(int)
+	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		return
 	}
 
 	name := mux.Vars(r)["name"]
 	if err := h.pb.DelContact(userID, name); err != nil {
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		switch err {
+		case domen.ErrContactNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Contact deleted successfully"})
 }
 
 func (h *ContactHandlers) HandleFindContact(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "applicatin/json")
+	w.Header().Set("Content-Type", "application/json")
 
-	rUserID := r.Context().Value("userID")
-	userID, ok := rUserID.(int)
+	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		return
 	}
 
 	name := r.URL.Query().Get("name")
 	contacts, err := h.pb.FindContact(userID, name)
 	if err != nil {
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		switch err {
+		case domen.ErrContactNotFound:
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 

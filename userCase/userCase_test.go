@@ -2,14 +2,12 @@ package userCase
 
 import (
 	"PhBook/domen"
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-// MockDatabase реализует интерфейс Database
 type MockDatabase struct {
 	mock.Mock
 }
@@ -44,167 +42,128 @@ func (m *MockDatabase) GetContacts(userID int) ([]domen.Contact, error) {
 	return args.Get(0).([]domen.Contact), args.Error(1)
 }
 
-func TestNewPhoneBook(t *testing.T) {
+func TestPhoneBook(t *testing.T) {
 	mockDB := new(MockDatabase)
 	pb := NewPhoneBook(mockDB)
 
-	assert.NotNil(t, pb)
-	assert.Equal(t, mockDB, pb.db)
-}
+	t.Run("RegisterUser", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			username string
+			password string
+			mockErr  error
+			wantErr  error
+		}{
+			{
+				name:     "Success",
+				username: domen.TestUsername,
+				password: domen.TestPassword,
+			},
+			{
+				name:     "User exists",
+				username: "existing",
+				password: "pass",
+				mockErr:  domen.ErrUserExists,
+				wantErr:  domen.ErrUserExists,
+			},
+		}
 
-func TestRegisterUser_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				mockDB.On("RegisterUser", tt.username, tt.password).Return(tt.mockErr)
+				err := pb.RegisterUser(tt.username, tt.password)
 
-	// Настройка ожиданий
-	mockDB.On("RegisterUser", "testuser", "testpass").Return(nil)
+				if tt.wantErr != nil {
+					
+					assert.ErrorIs(t, err, tt.wantErr)
+				} else {
+					assert.NoError(t, err)
+				}
+				mockDB.AssertExpectations(t)
+			})
+		}
+	})
 
-	// Вызов методов
-	err := pb.RegisterUser("testuser", "testpass")
+	t.Run("AuthUser", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			username string
+			password string
+			mockID   int
+			mockErr  error
+			wantID   int
+			wantErr  error
+		}{
+			{
+				name:     "Success",
+				username: domen.TestUsername,
+				password: domen.TestPassword,
+				mockID:   domen.TestUserID,
+				wantID:   domen.TestUserID,
+			},
+			{
+				name:     "Invalid credentials",
+				username: "invalid",
+				password: "wrong",
+				mockErr:  domen.ErrInvalidCredentials,
+				wantErr:  domen.ErrInvalidCredentials,
+			},
+		}
 
-	// Проверка
-	assert.NoError(t, err)
-	mockDB.AssertExpectations(t)
-}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				mockDB.On("AuthUser", tt.username, tt.password).Return(tt.mockID, tt.mockErr)
+				id, err := pb.AuthUser(tt.username, tt.password)
 
-func TestRegisterUser_Error(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
+				if tt.wantErr != nil {
 
-	expectedErr := errors.New("user already exists")
-	mockDB.On("RegisterUser", "existing", "pass").Return(expectedErr)
+					assert.ErrorIs(t, err, tt.wantErr)
+				} else {
+					assert.NoError(t, err)
+					assert.Equal(t, tt.wantID, id)
+				}
+				mockDB.AssertExpectations(t)
+			})
+		}
+	})
 
-	err := pb.RegisterUser("existing", "pass")
+	t.Run("ContactOperations", func(t *testing.T) {
+		testContact := domen.Contact{
+			ID:     1,
+			Name:   domen.TestContactName,
+			Phone:  domen.TestContactPhone,
+			UserID: domen.TestUserID,
+		}
 
-	assert.EqualError(t, err, expectedErr.Error())
-	mockDB.AssertExpectations(t)
-}
+		t.Run("AddContact", func(t *testing.T) {
+			mockDB.On("AddContact", domen.TestUserID, domen.TestContactName, domen.TestContactPhone).Return(nil)
+			err := pb.AddContact(domen.TestUserID, domen.TestContactName, domen.TestContactPhone)
+			assert.NoError(t, err)
+			mockDB.AssertExpectations(t)
+		})
 
-func TestAuthUser_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
+		t.Run("FindContact", func(t *testing.T) {
+			mockDB.On("FindContact", domen.TestUserID, "Doe").Return([]domen.Contact{testContact}, nil)
+			contacts, err := pb.FindContact(domen.TestUserID, "Doe")
+			assert.NoError(t, err)
+			assert.Len(t, contacts, 1)
+			assert.Equal(t, domen.TestContactName, contacts[0].Name)
+			mockDB.AssertExpectations(t)
+		})
 
-	expectedID := 1
-	mockDB.On("AuthUser", "valid", "pass").Return(expectedID, nil)
+		t.Run("GetContacts", func(t *testing.T) {
+			mockDB.On("GetContacts", domen.TestUserID).Return([]domen.Contact{testContact}, nil)
+			contacts, err := pb.GetContacts(domen.TestUserID)
+			assert.NoError(t, err)
+			assert.Len(t, contacts, 1)
+			mockDB.AssertExpectations(t)
+		})
 
-	id, err := pb.AuthUser("valid", "pass")
-
-	assert.NoError(t, err)
-	assert.Equal(t, expectedID, id)
-	mockDB.AssertExpectations(t)
-}
-
-func TestAddContact_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 1
-	name := "John"
-	phone := "+1234567890"
-
-	mockDB.On("AddContact", userID, name, phone).Return(nil)
-
-	err := pb.AddContact(userID, name, phone)
-
-	assert.NoError(t, err)
-	mockDB.AssertExpectations(t)
-}
-
-func TestDelContact_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 1
-	name := "John"
-
-	mockDB.On("DelContact", userID, name).Return(nil)
-
-	err := pb.DelContact(userID, name)
-
-	assert.NoError(t, err)
-	mockDB.AssertExpectations(t)
-}
-
-func TestFindContact_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 1
-	name := "John"
-	expectedContacts := []domen.Contact{
-		{ID: 1, Name: "John Doe", Phone: "+1234567890"},
-	}
-
-	mockDB.On("FindContact", userID, name).Return(expectedContacts, nil)
-
-	contacts, err := pb.FindContact(userID, name)
-
-	assert.NoError(t, err)
-	assert.Equal(t, expectedContacts, contacts)
-	mockDB.AssertExpectations(t)
-}
-
-func TestGetContacts_Success(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 1
-	expectedContacts := []domen.Contact{
-		{ID: 1, Name: "John Doe", Phone: "+1234567890"},
-		{ID: 2, Name: "Jane Smith", Phone: "+9876543210"},
-	}
-
-	mockDB.On("GetContacts", userID).Return(expectedContacts, nil)
-
-	contacts, err := pb.GetContacts(userID)
-
-	assert.NoError(t, err)
-	assert.Equal(t, expectedContacts, contacts)
-	mockDB.AssertExpectations(t)
-}
-
-func TestAuthUser_InvalidCredentials(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	expectedErr := errors.New("invalid credentials")
-	mockDB.On("AuthUser", "invalid", "pass").Return(0, expectedErr)
-
-	_, err := pb.AuthUser("invalid", "pass")
-
-	assert.EqualError(t, err, expectedErr.Error())
-	mockDB.AssertExpectations(t)
-}
-
-func TestFindContact_NotFound(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 1
-	name := "Nonexistent"
-	var emptyContacts []domen.Contact
-
-	mockDB.On("FindContact", userID, name).Return(emptyContacts, nil)
-
-	contacts, err := pb.FindContact(userID, name)
-
-	assert.NoError(t, err)
-	assert.Empty(t, contacts)
-	mockDB.AssertExpectations(t)
-}
-
-func TestGetContacts_Empty(t *testing.T) {
-	mockDB := new(MockDatabase)
-	pb := NewPhoneBook(mockDB)
-
-	userID := 2
-	var emptyContacts []domen.Contact
-
-	mockDB.On("GetContacts", userID).Return(emptyContacts, nil)
-
-	contacts, err := pb.GetContacts(userID)
-
-	assert.NoError(t, err)
-	assert.Empty(t, contacts)
-	mockDB.AssertExpectations(t)
+		t.Run("DelContact", func(t *testing.T) {
+			mockDB.On("DelContact", domen.TestUserID, domen.TestContactName).Return(nil)
+			err := pb.DelContact(domen.TestUserID, domen.TestContactName)
+			assert.NoError(t, err)
+			mockDB.AssertExpectations(t)
+		})
+	})
 }

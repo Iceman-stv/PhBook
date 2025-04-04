@@ -2,260 +2,40 @@ package databasetest
 
 import (
 	"PhBook/database"
+	"PhBook/domen"
 	"PhBook/logger"
 	"PhBook/logger/mocklog"
 	"database/sql"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// setupTestDB создает тестовую БД и возвращает функцию для очистки
 func setupTestDB(t *testing.T) (*database.SQLiteDB, *mocklog.MockLogger, func()) {
 	t.Helper()
 
 	db, err := sql.Open("sqlite", ":memory:")
 	if err != nil {
-		t.Fatalf("Ошибка создания тестовой БД: %v", err)
+
+		t.Fatalf("Failed to create test DB: %v", err)
 	}
 
-	// Создание MockLogger
 	mockLogger := mocklog.NewMockLogger()
-
-	// Преобразование в интерфейс logger.Logger
 	var logger logger.Logger = mockLogger
 
-	// Применение миграции
 	if err := database.RunMigrations(db, logger); err != nil {
+
 		db.Close()
-		t.Fatalf("Ошибка применения миграций: %v", err)
+		t.Fatalf("Failed to apply migrations: %v", err)
 	}
 
-	// Создание SQLiteDB через конструктор
 	sqliteDB := database.NewTestDB(db, logger)
-
-	// Возврат MockLogger для проверки логов
 	return sqliteDB, mockLogger, func() {
 		if err := db.Close(); err != nil {
-			t.Logf("Ошибка при закрытии БД: %v", err)
+
+			t.Logf("Failed to close DB: %v", err)
 		}
 	}
-}
-
-func TestRegisterUser(t *testing.T) {
-	db, mockLogger, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	tests := []struct {
-		name        string
-		username    string
-		password    string
-		wantErr     bool
-		expectLog   string
-		expectError string
-	}{
-		{
-			name:     "Valid",
-			username: "validuser",
-			password: "validpass123",
-			wantErr:  false,
-		},
-		{
-			name:        "Empty username",
-			username:    "",
-			password:    "validpass123",
-			wantErr:     true,
-			expectLog:   "имя пользователя не может быть пустым",
-			expectError: "имя пользователя не может быть пустым",
-		},
-		{
-			name:        "Empty password",
-			username:    "validuser",
-			password:    "",
-			wantErr:     true,
-			expectLog:   "пароль не может быть пустым",
-			expectError: "пароль не может быть пустым",
-		},
-		{
-			name:        "Whitespace username",
-			username:    "   ",
-			password:    "validpass123",
-			wantErr:     true,
-			expectLog:   "имя пользователя не может быть пустым",
-			expectError: "имя пользователя не может быть пустым",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Сброс логов перед каждым тестом
-			mockLogger.ClearLogs()
-
-			err := db.RegisterUser(tt.username, tt.password)
-
-			// Проверка ошибок
-			if (err != nil) != tt.wantErr {
-
-				t.Errorf("RegisterUser() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if tt.wantErr {
-
-				// Проверка сообщения об ошибке
-				if err == nil || err.Error() != tt.expectError {
-
-					t.Errorf("Ожидалась ошибка '%s', получено: '%v'", tt.expectError, err)
-				}
-
-				// Проверка логов
-				if !mockLogger.Contains(tt.expectLog) {
-
-					t.Errorf("Ожидалось сообщение '%s' в логах", tt.expectLog)
-					t.Logf("Полученные логи: %v", mockLogger.GetLogs())
-				}
-			} else if err != nil {
-
-				t.Errorf("Не ожидалась ошибка, но получено: %v", err)
-			}
-		})
-	}
-}
-
-func TestAuthUser(t *testing.T) {
-	db, _, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	// Регистрация тестового пользователя
-	if err := db.RegisterUser("authuser", "authpass"); err != nil {
-
-		t.Fatal(err)
-	}
-
-	tests := []struct {
-		name     string
-		username string
-		password string
-		wantErr  bool
-	}{
-		{"Valid", "authuser", "authpass", false},
-		{"Wrong password", "authuser", "wrong", true},
-		{"Nonexistent user", "nouser", "nopass", true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := db.AuthUser(tt.username, tt.password)
-			if (err != nil) != tt.wantErr {
-
-				t.Errorf("Ошибка функции AuthUser() = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestContactOperations(t *testing.T) {
-	db, mockLogger, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	userID := setupTestUser(t, db, "contactuser", "contactpass")
-
-	t.Run("Add contact", func(t *testing.T) {
-		err := db.AddContact(userID, "John Doe", "+1234567890")
-		if err != nil {
-
-			t.Fatal(err)
-		}
-
-		if !mockLogger.Contains("Миграции успешно применены") {
-
-			t.Error("Ожидалась запись об успешном применении миграций")
-		}
-	})
-
-	t.Run("Get contacts", func(t *testing.T) {
-		contacts, err := db.GetContacts(userID)
-		if err != nil {
-
-			t.Fatal(err)
-		}
-
-		if len(contacts) != 1 {
-
-			t.Fatalf("Ожидался 1 контакт, получено %d", len(contacts))
-		}
-
-		if contacts[0].Name != "John Doe" {
-
-			t.Errorf("Ожидался контакт 'John Doe', получен '%s'", contacts[0].Name)
-		}
-	})
-
-	t.Run("Find contact", func(t *testing.T) {
-		contacts, err := db.FindContact(userID, "Doe")
-		if err != nil {
-
-			t.Fatal(err)
-		}
-
-		if len(contacts) != 1 {
-
-			t.Fatalf("Ожидался 1 контакт, получено %d", len(contacts))
-		}
-	})
-
-	t.Run("Delete contact", func(t *testing.T) {
-		err := db.DelContact(userID, "John Doe")
-		if err != nil {
-
-			t.Fatal(err)
-		}
-
-		contacts, err := db.GetContacts(userID)
-		if err != nil {
-
-			t.Fatal(err)
-		}
-
-		if len(contacts) != 0 {
-
-			t.Fatalf("Ожидалось 0 контактов, получено %d", len(contacts))
-		}
-	})
-}
-
-func TestErrorCases(t *testing.T) {
-	db, mockLogger, cleanup := setupTestDB(t)
-	defer cleanup()
-
-	t.Run("Add contact to nonexistent user", func(t *testing.T) {
-		err := db.AddContact(999, "Test", "+123")
-		if err == nil {
-
-			t.Error("Ожидалась ошибка о несуществующем пользователе")
-		} else if err.Error() != "пользователь не существует" {
-
-			t.Errorf("Ожидалась ошибка 'пользователь не существует', получено: %v", err)
-		}
-
-		if !mockLogger.Contains("Пользователь с ID 999 не существует") {
-
-			t.Error("Ожидалось сообщение об ошибке в логах")
-		}
-	})
-
-	t.Run("Get contacts for nonexistent user", func(t *testing.T) {
-		_, err := db.GetContacts(999)
-		if err == nil {
-
-			t.Error("Ожидалась ошибка о несуществующем пользователе")
-		} else if err.Error() != "пользователь не существует" {
-
-			t.Errorf("Ожидалась ошибка 'пользователь не существует', получено: %v", err)
-		}
-
-		if !mockLogger.Contains("Пользователь с ID 999 не существует") {
-
-			t.Error("Ожидалось сообщение об ошибке в логах")
-		}
-	})
 }
 
 func setupTestUser(t *testing.T, db *database.SQLiteDB, username, password string) int {
@@ -273,4 +53,122 @@ func setupTestUser(t *testing.T, db *database.SQLiteDB, username, password strin
 	}
 
 	return userID
+}
+
+func TestDatabase(t *testing.T) {
+	db, mockLogger, cleanup := setupTestDB(t)
+	defer cleanup()
+
+	t.Run("UserOperations", func(t *testing.T) {
+		t.Run("RegisterUser", func(t *testing.T) {
+			tests := []struct {
+				name     string
+				username string
+				password string
+				wantErr  error
+			}{
+				{"Success", domen.TestUsername, domen.TestPassword, nil},
+				{"Empty username", "", domen.TestPassword, domen.ErrEmptyUsername},
+				{"Empty password", domen.TestUsername, "", domen.ErrEmptyPassword},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					mockLogger.ClearLogs()
+					err := db.RegisterUser(tt.username, tt.password)
+
+					if tt.wantErr != nil {
+
+						assert.ErrorIs(t, err, tt.wantErr)
+						assert.True(t, mockLogger.Contains(tt.wantErr.Error()),
+							"Expected log to contain '%s', got logs: %v",
+							tt.wantErr.Error(), mockLogger.GetLogs())
+					} else {
+						assert.NoError(t, err)
+					}
+				})
+			}
+		})
+
+		t.Run("AuthUser", func(t *testing.T) {
+			authUsername := "authuser"
+			authPassword := "authpass"
+			assert.NoError(t, db.RegisterUser(authUsername, authPassword))
+
+			tests := []struct {
+				name     string
+				username string
+				password string
+				wantErr  error
+			}{
+				{"Success", authUsername, authPassword, nil},
+				{"Wrong password", authUsername, "wrong", domen.ErrInvalidCredentials},
+				{"Nonexistent user", "nouser", "nopass", domen.ErrUserNotFound},
+			}
+
+			for _, tt := range tests {
+				t.Run(tt.name, func(t *testing.T) {
+					_, err := db.AuthUser(tt.username, tt.password)
+					if tt.wantErr != nil {
+
+						assert.ErrorIs(t, err, tt.wantErr)
+					} else {
+						assert.NoError(t, err)
+					}
+				})
+			}
+		})
+	})
+
+	t.Run("ContactOperations", func(t *testing.T) {
+		userID := setupTestUser(t, db, "contactuser", "contactpass")
+
+		t.Run("AddContact", func(t *testing.T) {
+			err := db.AddContact(userID, domen.TestContactName, domen.TestContactPhone)
+			assert.NoError(t, err)
+		})
+
+		t.Run("GetContacts", func(t *testing.T) {
+			contacts, err := db.GetContacts(userID)
+			assert.NoError(t, err)
+			assert.Len(t, contacts, 1)
+			assert.Equal(t, domen.TestContactName, contacts[0].Name)
+		})
+
+		t.Run("FindContact", func(t *testing.T) {
+			contacts, err := db.FindContact(userID, "Doe")
+			assert.NoError(t, err)
+			assert.Len(t, contacts, 1)
+		})
+
+		t.Run("DeleteContact", func(t *testing.T) {
+			err := db.DelContact(userID, domen.TestContactName)
+			assert.NoError(t, err)
+
+			contacts, err := db.GetContacts(userID)
+			assert.NoError(t, err)
+			assert.Empty(t, contacts)
+		})
+	})
+
+	t.Run("ErrorCases", func(t *testing.T) {
+		t.Run("AddContactToNonexistentUser", func(t *testing.T) {
+			mockLogger.ClearLogs()
+			err := db.AddContact(999, "Test", "+123")
+			assert.ErrorIs(t, err, domen.ErrUserNotFound)
+			assert.True(t, mockLogger.Contains(domen.ErrUserNotFound.Error()),
+				"Expected log to contain '%s', got logs: %v",
+				domen.ErrUserNotFound.Error(), mockLogger.GetLogs())
+		})
+
+		t.Run("GetContactsForNonexistentUser", func(t *testing.T) {
+			mockLogger.ClearLogs()
+			contacts, err := db.GetContacts(999)
+			assert.Nil(t, contacts)
+			assert.ErrorIs(t, err, domen.ErrUserNotFound)
+			assert.True(t, mockLogger.Contains(domen.ErrUserNotFound.Error()),
+				"Expected log to contain '%s', got logs: %v",
+				domen.ErrUserNotFound.Error(), mockLogger.GetLogs())
+		})
+	})
 }

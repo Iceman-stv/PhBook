@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"PhBook/domen"
 	"PhBook/server/jwt"
 	"PhBook/userCase"
 )
@@ -19,50 +20,70 @@ func NewAuthHandlers(pb *userCase.PhoneBook) *AuthHandlers {
 }
 
 func (h *AuthHandlers) HandleRegister(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var req domen.User
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-		http.Error(w, "Неправильный запрос (регистрация)", http.StatusBadRequest)
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.Username == "" {
+
+		http.Error(w, domen.ErrEmptyUsername.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.Password == "" {
+
+		http.Error(w, domen.ErrEmptyPassword.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err := h.pb.RegisterUser(req.Username, req.Password); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+
+		switch err {
+		case domen.ErrUserExists:
+			http.Error(w, err.Error(), http.StatusConflict)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Пользователь зарегистрирован"))
+	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
 }
 
 func (h *AuthHandlers) HandleAuth(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var req domen.User
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 
-		http.Error(w, "Неправильный запрос (Аутентификация)", http.StatusBadRequest)
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusBadRequest)
 		return
 	}
 
 	userID, err := h.pb.AuthUser(req.Username, req.Password)
 	if err != nil {
 
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		switch err {
+		case domen.ErrInvalidCredentials, domen.ErrUserNotFound:
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+		default:
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
 	token, err := jwt.GenerateJWT(userID)
 	if err != nil {
 
-		http.Error(w, "Ошибка при генерации токена", http.StatusInternalServerError)
+		http.Error(w, domen.ErrOpertionFailed.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"token":  token,
+		"userID": userID,
+	})
 }

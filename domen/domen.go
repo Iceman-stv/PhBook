@@ -1,5 +1,19 @@
 package domen
 
+import "errors"
+
+// Общие ошибки приложения
+var (
+	ErrUserExists         = errors.New("user already exists")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrEmptyUsername      = errors.New("username cannot be empty")
+	ErrEmptyPassword      = errors.New("password cannot be empty")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrContactNotFound    = errors.New("contact not found")
+	ErrContactExists      = errors.New("contact already exists")
+	ErrOpertionFailed     = errors.New("Operation failed")
+)
+
 // User представляет структуру пользователя
 type User struct {
 	ID       int    `json:"userID"`
@@ -14,3 +28,12 @@ type Contact struct {
 	Phone  string `json:"phone"`
 	UserID int    `json:"userID"`
 }
+
+// Константы для тестов
+const (
+	TestUsername     = "testuser"
+	TestPassword     = "testpass"
+	TestContactName  = "John Doe"
+	TestContactPhone = "+1234567890"
+	TestUserID       = 1
+)
