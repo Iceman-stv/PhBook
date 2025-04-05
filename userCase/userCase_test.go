@@ -2,6 +2,7 @@ package userCase
 
 import (
 	"PhBook/domen"
+	"PhBook/domen/testconst"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,8 +57,8 @@ func TestPhoneBook(t *testing.T) {
 		}{
 			{
 				name:     "Success",
-				username: domen.TestUsername,
-				password: domen.TestPassword,
+				username: testconst.TestUsername,
+				password: testconst.TestPassword,
 			},
 			{
 				name:     "User exists",
@@ -74,7 +75,7 @@ func TestPhoneBook(t *testing.T) {
 				err := pb.RegisterUser(tt.username, tt.password)
 
 				if tt.wantErr != nil {
-					
+
 					assert.ErrorIs(t, err, tt.wantErr)
 				} else {
 					assert.NoError(t, err)
@@ -96,10 +97,10 @@ func TestPhoneBook(t *testing.T) {
 		}{
 			{
 				name:     "Success",
-				username: domen.TestUsername,
-				password: domen.TestPassword,
-				mockID:   domen.TestUserID,
-				wantID:   domen.TestUserID,
+				username: testconst.TestUsername,
+				password: testconst.TestPassword,
+				mockID:   testconst.TestUserID,
+				wantID:   testconst.TestUserID,
 			},
 			{
 				name:     "Invalid credentials",
@@ -130,38 +131,38 @@ func TestPhoneBook(t *testing.T) {
 	t.Run("ContactOperations", func(t *testing.T) {
 		testContact := domen.Contact{
 			ID:     1,
-			Name:   domen.TestContactName,
-			Phone:  domen.TestContactPhone,
-			UserID: domen.TestUserID,
+			Name:   testconst.TestContactName,
+			Phone:  testconst.TestContactPhone,
+			UserID: testconst.TestUserID,
 		}
 
 		t.Run("AddContact", func(t *testing.T) {
-			mockDB.On("AddContact", domen.TestUserID, domen.TestContactName, domen.TestContactPhone).Return(nil)
-			err := pb.AddContact(domen.TestUserID, domen.TestContactName, domen.TestContactPhone)
+			mockDB.On("AddContact", testconst.TestUserID, testconst.TestContactName, testconst.TestContactPhone).Return(nil)
+			err := pb.AddContact(testconst.TestUserID, testconst.TestContactName, testconst.TestContactPhone)
 			assert.NoError(t, err)
 			mockDB.AssertExpectations(t)
 		})
 
 		t.Run("FindContact", func(t *testing.T) {
-			mockDB.On("FindContact", domen.TestUserID, "Doe").Return([]domen.Contact{testContact}, nil)
-			contacts, err := pb.FindContact(domen.TestUserID, "Doe")
+			mockDB.On("FindContact", testconst.TestUserID, "Doe").Return([]domen.Contact{testContact}, nil)
+			contacts, err := pb.FindContact(testconst.TestUserID, "Doe")
 			assert.NoError(t, err)
 			assert.Len(t, contacts, 1)
-			assert.Equal(t, domen.TestContactName, contacts[0].Name)
+			assert.Equal(t, testconst.TestContactName, contacts[0].Name)
 			mockDB.AssertExpectations(t)
 		})
 
 		t.Run("GetContacts", func(t *testing.T) {
-			mockDB.On("GetContacts", domen.TestUserID).Return([]domen.Contact{testContact}, nil)
-			contacts, err := pb.GetContacts(domen.TestUserID)
+			mockDB.On("GetContacts", testconst.TestUserID).Return([]domen.Contact{testContact}, nil)
+			contacts, err := pb.GetContacts(testconst.TestUserID)
 			assert.NoError(t, err)
 			assert.Len(t, contacts, 1)
 			mockDB.AssertExpectations(t)
 		})
 
 		t.Run("DelContact", func(t *testing.T) {
-			mockDB.On("DelContact", domen.TestUserID, domen.TestContactName).Return(nil)
-			err := pb.DelContact(domen.TestUserID, domen.TestContactName)
+			mockDB.On("DelContact", testconst.TestUserID, testconst.TestContactName).Return(nil)
+			err := pb.DelContact(testconst.TestUserID, testconst.TestContactName)
 			assert.NoError(t, err)
 			mockDB.AssertExpectations(t)
 		})

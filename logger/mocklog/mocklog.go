@@ -25,10 +25,14 @@ func (m *MockLogger) LogFatal(message string, args ...interface{}) {
 }
 
 func (m *MockLogger) LogWarn(message string, args ...interface{}) {
-	m.log("[WARN] " + fmt.Sprintf(message, args...))
+	m.log("[WARNING] " + fmt.Sprintf(message, args...))
 }
 
 func (m *MockLogger) Close() error {
+	return nil
+}
+
+func (m *MockLogger) Sync() error {
 	return nil
 }
 
@@ -43,6 +47,7 @@ func (m *MockLogger) Contains(substr string) bool {
 	defer m.mu.Unlock()
 	for _, log := range m.logs {
 		if strings.Contains(log, substr) {
+
 			return true
 		}
 	}
@@ -53,14 +58,12 @@ func NewMockLogger() *MockLogger {
 	return &MockLogger{}
 }
 
-// ClearLogs очищает сохранённые логи
 func (m *MockLogger) ClearLogs() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.logs = []string{}
 }
 
-// GetLogs возвращает все сохранённые логи
 func (m *MockLogger) GetLogs() []string {
 	m.mu.Lock()
 	defer m.mu.Unlock()

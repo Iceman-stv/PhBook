@@ -28,12 +28,3 @@ type Contact struct {
 	Phone  string `json:"phone"`
 	UserID int    `json:"userID"`
 }
-
-// Константы для тестов
-const (
-	TestUsername     = "testuser"
-	TestPassword     = "testpass"
-	TestContactName  = "John Doe"
-	TestContactPhone = "+1234567890"
-	TestUserID       = 1
-)

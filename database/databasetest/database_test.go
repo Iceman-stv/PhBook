@@ -2,6 +2,7 @@ package databasetest
 
 import (
 	"PhBook/database"
+	"PhBook/domen/testconst"
 	"PhBook/domen"
 	"PhBook/logger"
 	"PhBook/logger/mocklog"
@@ -67,9 +68,9 @@ func TestDatabase(t *testing.T) {
 				password string
 				wantErr  error
 			}{
-				{"Success", domen.TestUsername, domen.TestPassword, nil},
-				{"Empty username", "", domen.TestPassword, domen.ErrEmptyUsername},
-				{"Empty password", domen.TestUsername, "", domen.ErrEmptyPassword},
+				{"Success", testconst.TestUsername, testconst.TestPassword, nil},
+				{"Empty username", "", testconst.TestPassword, domen.ErrEmptyUsername},
+				{"Empty password", testconst.TestUsername, "", domen.ErrEmptyPassword},
 			}
 
 			for _, tt := range tests {
@@ -124,7 +125,7 @@ func TestDatabase(t *testing.T) {
 		userID := setupTestUser(t, db, "contactuser", "contactpass")
 
 		t.Run("AddContact", func(t *testing.T) {
-			err := db.AddContact(userID, domen.TestContactName, domen.TestContactPhone)
+			err := db.AddContact(userID, testconst.TestContactName, testconst.TestContactPhone)
 			assert.NoError(t, err)
 		})
 
@@ -132,7 +133,7 @@ func TestDatabase(t *testing.T) {
 			contacts, err := db.GetContacts(userID)
 			assert.NoError(t, err)
 			assert.Len(t, contacts, 1)
-			assert.Equal(t, domen.TestContactName, contacts[0].Name)
+			assert.Equal(t, testconst.TestContactName, contacts[0].Name)
 		})
 
 		t.Run("FindContact", func(t *testing.T) {
@@ -142,7 +143,7 @@ func TestDatabase(t *testing.T) {
 		})
 
 		t.Run("DeleteContact", func(t *testing.T) {
-			err := db.DelContact(userID, domen.TestContactName)
+			err := db.DelContact(userID, testconst.TestContactName)
 			assert.NoError(t, err)
 
 			contacts, err := db.GetContacts(userID)
