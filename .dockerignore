@@ -1,0 +1,10 @@
+.git/
+bin/
+Logs/
+coverage.out
+*.db
+*.md
+.dockerignore
+Dockerfile
+Makefile
+gen/

@@ -16,66 +16,37 @@ import (
 	"time"
 )
 
-func main() {
-	// Инициализация логгера
-	l, err := logger.InitLogger("Logs")
-	if err != nil {
-
-		panic("Ошибка инициализации логгера: " + err.Error())
-	}
-	defer l.Close()
-
-	// Инициализация БД
-	db, err := database.NewSQLiteDB(l)
-	if err != nil {
-
-		l.LogFatal("Ошибка при инициализации БД: %v", err)
-		return
-	}
-
-	// Создание PhoneBook
-	pb := userCase.NewPhoneBook(db)
-
-	// Канал для ошибок серверов
+func runServerMode(l logger.Logger, pb *userCase.PhoneBook) {
 	errChan := make(chan error, 2)
-
-	// Создание WaitGroup для ожидания завершения серверов
 	var wg sync.WaitGroup
-	wg.Add(2) // Для HTTP и gRPC серверов
+	wg.Add(2)
 
-	// Запуск HTTP-сервера
+	// HTTP сервер
 	httpServer := server.NewServer(pb, l)
 	go func() {
 		defer wg.Done()
-		l.LogInfo("Запуск HTTP-сервера на :8080")
+		l.LogInfo("HTTP сервер запущен на :8080")
 		if err := httpServer.Start(); err != nil && err != http.ErrServerClosed {
 
 			errChan <- err
 		}
 	}()
 
-	// Запуск gRPC-сервера
+	// gRPC сервер
 	grpcServer := gRPC.New(pb, l, gRPC.DefaultConfig())
 	go func() {
 		defer wg.Done()
-		l.LogInfo("Запуск gRPC-сервера на :50051")
+		l.LogInfo("gRPC сервер запущен на :50051")
 		if err := grpcServer.Start(); err != nil {
 
 			errChan <- err
 		}
 	}()
 
-	// Создание и запуск консольного приложения
-	app := console.NewConsole(pb)
-	go func() {
-		app.Start()
-	}()
-
-	// Ожидание сигналов завершения
+	// Ожидание завершения
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-	// Ожидание либо сигнала завершения, либо ошибки от серверов
 	select {
 	case err := <-errChan:
 		l.LogFatal("Ошибка сервера: %v", err)
@@ -84,27 +55,42 @@ func main() {
 	}
 
 	// Graceful shutdown
-	l.LogInfo("Завершение работы серверов...")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Остановка gRPC сервера
-	go func() {
-		grpcServer.Stop()
-	}()
+	grpcServer.Stop()
+	if srv := httpServer.GetHTTPServer(); srv != nil {
 
-	// Остановка HTTP сервера через его внутренний http.Server
-	go func() {
-		if srv := httpServer.GetHTTPServer(); srv != nil {
-
-			if err := srv.Shutdown(ctx); err != nil {
-
-				l.LogError("Ошибка при остановке HTTP-сервера: %v", err)
-			}
-		}
-	}()
-
-	// Ожидание завершения всех серверов
+		srv.Shutdown(ctx)
+	}
 	wg.Wait()
 	l.LogInfo("Все серверы остановлены. Приложение завершено.")
+}
+
+func main() {
+	// Инициализация
+	l, err := logger.InitLogger("Logs")
+	if err != nil {
+
+		panic("Ошибка логгера: " + err.Error())
+	}
+	defer l.Close()
+
+	db, err := database.NewSQLiteDB(l)
+	if err != nil {
+
+		l.LogFatal("Ошибка БД: %v", err)
+	}
+	pb := userCase.NewPhoneBook(db)
+
+	// Выбор режима
+	if len(os.Args) > 1 && os.Args[1] == "--server" {
+
+		l.LogInfo("=== РЕЖИМ СЕРВЕРА ===")
+		runServerMode(l, pb)
+	} else {
+
+		l.LogInfo("=== КОНСОЛЬНЫЙ РЕЖИМ ===")
+		console.NewConsole(pb).Start()
+	}
 }

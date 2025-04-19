@@ -2,8 +2,8 @@ package databasetest
 
 import (
 	"PhBook/database"
-	"PhBook/domen/testconst"
 	"PhBook/domen"
+	"PhBook/domen/testconst"
 	"PhBook/logger"
 	"PhBook/logger/mocklog"
 	"database/sql"
