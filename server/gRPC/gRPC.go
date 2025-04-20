@@ -16,24 +16,48 @@ import (
 
 	pB "PhBook/gen/github.com/Iceman-stv/PhBook/gen"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 )
 
+const (
+	enExPath = ".env.example"
+	envPath  = ".env"
+	grpcPort = "PortGRPC"
+	def      = "50051"
+)
+
 // ServerConfig содержит конфигурацию gRPC сервера
 type ServerConfig struct {
-	Port             string        // Порт в формате ":50051"
+	Port             string        // Порт в формате ":50051" берется из .env
 	EnableReflection bool          // Включить reflection API
 	EnableAuth       bool          // Включить аутентификацию
 	Timeout          time.Duration // Таймаут соединения
 }
 
+func loadEnv(logger logger.Logger) string {
+	// Загрузка .env файлов
+	if err := godotenv.Load(enExPath, envPath); err != nil {
+		logger.LogError("gRPC: Ошибка загрузки .env файлов", err)
+	}
+
+	addr := os.Getenv(grpcPort)
+	if addr == "" {
+		logger.LogWarn("gRPC: Адрес не установлен, используется адрес по умолчанию %v", def)
+		panic("Адрес gRPC должен быть задан в .env файле")
+		addr = def
+	}
+	return addr
+}
+
 // DefaultConfig возвращает конфигурацию по умолчанию
-func DefaultConfig() *ServerConfig {
+func DefaultConfig(logger logger.Logger) *ServerConfig {
+	port := loadEnv(logger)
 	return &ServerConfig{
-		Port:             ":50051",
+		Port:             port,
 		EnableReflection: true,
 		EnableAuth:       true,
 		Timeout:          30 * time.Second,
@@ -61,7 +85,7 @@ func New(pb *userCase.PhoneBook, l logger.Logger, cfg *ServerConfig) *GRPCServer
 	}
 	if cfg == nil {
 
-		cfg = DefaultConfig()
+		cfg = DefaultConfig(l)
 	}
 
 	return &GRPCServer{

@@ -17,6 +17,14 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+)
+
+const (
+	enExPath = ".env.example"
+	envPath  = ".env"
+	port     = "Addres"
+	def      = ":8080"
 )
 
 // Server представляет HTTP-сервер приложения
@@ -64,6 +72,23 @@ func (s *Server) configureRouter() {
 	api.HandleFunc("/contacts/search", contactHandlers.HandleFindContact).Methods("GET")
 }
 
+func (s *Server) loadEnv() string {
+	// Загрузка .env файлов
+	if err := godotenv.Load(enExPath, envPath); err != nil {
+
+		s.logger.LogError("Server: Ошибка загрузки .env файлов", err)
+	}
+
+	addr := os.Getenv(port)
+	if addr == "" {
+
+		s.logger.LogWarn("Server: Адрес не установлен, используется адрес по умолчанию %v", def)
+		panic("Адрес должен быть задан в .env файле")
+		addr = def
+	}
+	return addr
+}
+
 // Start запускает сервер с поддержкой graceful shutdown
 func (s *Server) Start() error {
 	s.configureRouter()
@@ -75,9 +100,11 @@ func (s *Server) Start() error {
 		handlers.AllowedOrigins([]string{"*"}),
 	)
 
+	addr := s.loadEnv()
+
 	// Создание HTTP-сервера
 	s.httpServer = &http.Server{
-		Addr:    ":8080",
+		Addr:    addr,
 		Handler: cors(s.router),
 	}
 

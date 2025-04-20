@@ -33,7 +33,7 @@ func runServerMode(l logger.Logger, pb *userCase.PhoneBook) {
 	}()
 
 	// gRPC сервер
-	grpcServer := gRPC.New(pb, l, gRPC.DefaultConfig())
+	grpcServer := gRPC.New(pb, l, gRPC.DefaultConfig(l))
 	go func() {
 		defer wg.Done()
 		l.LogInfo("gRPC сервер запущен на :50051")
